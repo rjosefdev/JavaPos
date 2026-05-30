@@ -1,8 +1,9 @@
 package com.Jose.AulaPos.Controllers;
 
 import com.Jose.AulaPos.Models.Pessoa;
+import com.Jose.AulaPos.Repositories.PessoaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -10,82 +11,43 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
-@RequestMapping("/pessoa")
+@RestController
+@RequestMapping("/pessoas")
 public class PessoaController {
-    private static final List<Pessoa> pessoas = new ArrayList<>();
+    @Autowired
+    private PessoaRepository pessoaRepository;
 
-    @PostMapping("/pessoa")
-    @ResponseBody
-    public Pessoa criar(@RequestBody Pessoa novaPessoa) {
-        pessoas.add(novaPessoa);
-        return novaPessoa;
+    @PostMapping()
+    @ResponseStatus(HttpStatus.CREATED)
+    public Pessoa adicionar(@RequestBody Pessoa p) {
+        return pessoaRepository.saveAndFlush(p);
     }
 
-    @GetMapping("/pessoas")
-    @ResponseBody
+    @GetMapping()
     public List<Pessoa> listar() {
-        return pessoas;
+        return pessoaRepository.findAll();
     }
 
-    @GetMapping("/pessoa/{nome}")
-    @ResponseBody
-    public Optional<Pessoa> buscar(@PathVariable String nome) {
-        return pessoas.stream()
-                .filter(i -> i.getNome().equalsIgnoreCase(nome))
-                .findFirst();
-    }
-
-    @PutMapping("/pessoa/{id}")
-    @ResponseBody
-    public Pessoa substituirPessoa(@PathVariable Long id, @RequestBody Pessoa novaPessoa) {
-        Pessoa pessoa = pessoas.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Pessoa não encontrada."
-                ));
-
-        pessoa.setId(novaPessoa.getId());
-        pessoa.setNome(novaPessoa.getNome());
-
-        return pessoa;
-    }
-
-    @PatchMapping("/pessoa/{id}")
-    @ResponseBody
-    public Pessoa atualizarPessoa(@PathVariable Long id, @RequestBody Pessoa dadosAtualizacao) {
-        Pessoa pessoa = pessoas.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Pessoa não encontrada."
-                ));
-
-        if (dadosAtualizacao.getNome() != null) {
-            pessoa.setNome(dadosAtualizacao.getNome());
+    @GetMapping("/{id}")
+    public Optional<Pessoa> buscarPorId(@PathVariable Long id) {
+        try{
+            return pessoaRepository.findById(id);
+        } catch (Exception ex){
+            return Optional.empty();
         }
-
-        if (dadosAtualizacao.getId() != null) {
-            pessoa.setId(dadosAtualizacao.getId());
-        }
-
-        return pessoa;
     }
 
-    @DeleteMapping("/pessoa/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletarPessoa(@PathVariable Long id) {
-        Pessoa pessoa = pessoas.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Pessoa não encontrada."
-                ));
+    @PutMapping("/{id}")
+    public Pessoa alterar(@PathVariable Long id, @RequestBody Pessoa novaPessoa) {
+        Pessoa p = pessoaRepository.findById(id)
+                .orElseThrow(()-> new
+                        ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não encontrada!"));
+        p.setNome(novaPessoa.getNome());
+        return pessoaRepository.saveAndFlush(p);
+    }
 
-        pessoas.remove(pessoa);
+    @DeleteMapping("/{id}")
+    public void removerPessoa(@PathVariable Long id) {
+        pessoaRepository.deleteById(id);
     }
 }
