@@ -52,7 +52,7 @@ No Windows:
 
 ## Colecao do Insomnia
 
-Existe uma colecao do Insomnia em `docs/insomnia/insomnia-hello-controller.json` com os endpoints das controllers atuais. O arquivo pode ser importado diretamente no Insomnia.
+Existe uma colecao do Insomnia em [docs/insomnia](docs/insomnia/insomnia-hello-controller.json) com os endpoints das controllers atuais. O arquivo pode ser importado diretamente no Insomnia.
 
 ## Estrutura do Projeto
 
